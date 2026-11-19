@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+    background-color: #090d14;
+    color: #e2e8f0;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+/* Minimalist Canvas Grid (Clean Linear / Figma style) */
+.bg-grid-pattern {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Ultra-thin Minimalist Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Animations for flowing network packets */
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.animate-flow-cable {
+  stroke-dasharray: 4 6;
+  animation: flowDash 0.9s linear infinite;
+}
+
+.animate-flow-wifi {
+  stroke-dasharray: 3 6;
+  animation: flowDash 1.4s linear infinite;
+}
+
+@keyframes phoneRing {
+  0% { transform: rotate(0deg) scale(1); }
+  10% { transform: rotate(10deg) scale(1.04); }
+  20% { transform: rotate(-10deg) scale(1.04); }
+  30% { transform: rotate(10deg) scale(1.04); }
+  40% { transform: rotate(-10deg) scale(1.04); }
+  50% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-phone-ring {
+  animation: phoneRing 1.6s ease-in-out infinite;
+}
