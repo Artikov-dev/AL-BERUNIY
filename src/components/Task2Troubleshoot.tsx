@@ -8,10 +8,11 @@ import {
   Wrench, 
   ArrowRight, 
   Search, 
-  XCircle 
+  XCircle,
+  Dices
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import type { Language, IncidentState } from '../types';
+import type { Language, IncidentState, Task2Scenario } from '../types';
 import { translations } from '../i18n/translations';
 import { soundEffects } from '../utils/audio';
 
@@ -31,6 +32,38 @@ interface PcDiagnosticInfo {
   traffic: string;
 }
 
+function generateRandomScenario(): Task2Scenario {
+  const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  for (let i = nums.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [nums[i], nums[j]] = [nums[j], nums[i]];
+  }
+
+  const conflictPc = nums[0];
+  const partnerPc = nums[1];
+  const gatewayPc = nums[2];
+  const virusPc = nums[3];
+
+  const candidateIps = ['192.168.1.17', '192.168.1.18', '192.168.1.21', '192.168.1.22', '192.168.1.25'];
+  const freeIp = candidateIps[Math.floor(Math.random() * candidateIps.length)];
+
+  const candidateGateways = ['192.168.0.1', '10.0.0.1', '192.168.2.1', '172.16.0.1'];
+  const badGateway = candidateGateways[Math.floor(Math.random() * candidateGateways.length)];
+
+  const virusRates = ['52,400 pkt/s (DDoS)', '64,800 pkt/s (Botnet)', '48,200 pkt/s (SYN Flood)', '71,100 pkt/s (UDP Flood)'];
+  const virusTrafficRate = virusRates[Math.floor(Math.random() * virusRates.length)];
+
+  return {
+    conflictPc,
+    partnerPc,
+    freeIp,
+    gatewayPc,
+    badGateway,
+    virusPc,
+    virusTrafficRate,
+  };
+}
+
 export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
   language,
   soundEnabled,
@@ -44,6 +77,9 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
   const [timeLeft, setTimeLeft] = useState<number>(600);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(true);
 
+  // Randomized Scenario
+  const [scenario, setScenario] = useState<Task2Scenario>(() => generateRandomScenario());
+
   // Incidents state
   const [incidents, setIncidents] = useState<IncidentState>({
     ipConflictFixed: isTaskCompleted,
@@ -51,7 +87,10 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
     virusQuarantined: isTaskCompleted,
   });
 
-  // Selected PC for deep inspection (1 to 10)
+  // Track which PCs have been inspected by the student
+  const [inspectedPcs, setInspectedPcs] = useState<number[]>(isTaskCompleted ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : []);
+
+  // Currently selected PC for deep inspection (1 to 10)
   const [inspectedPcNum, setInspectedPcNum] = useState<number | null>(null);
 
   // Input fields state for user typing
@@ -102,41 +141,69 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
     }
   }, [allResolved, isTaskCompleted, onCompleteTask2, soundEnabled]);
 
+  const handleRandomizeScenario = () => {
+    soundEffects.click(soundEnabled);
+    const newSc = generateRandomScenario();
+    setScenario(newSc);
+    setIncidents({
+      ipConflictFixed: false,
+      wrongGatewayFixed: false,
+      virusQuarantined: false,
+    });
+    setInspectedPcs([]);
+    setInspectedPcNum(null);
+    setInputIp('');
+    setInputGateway('');
+    setTerminalInput('');
+    setTerminalLogs([]);
+    setFormFeedback(null);
+    setTimeLeft(600);
+    setIsTimerRunning(true);
+  };
+
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // 10 PCs mock data with the 3 hidden errors
+  // Dynamic PC telemetry
   const getPcData = (num: number): PcDiagnosticInfo => {
-    if (num === 7) {
+    // 1. IP Conflict PC
+    if (num === scenario.conflictPc) {
+      const partnerIp = `192.168.1.${10 + scenario.partnerPc}`;
       return {
-        num: 7,
-        ip: incidents.ipConflictFixed ? '192.168.1.17' : '192.168.1.13',
+        num,
+        ip: incidents.ipConflictFixed ? scenario.freeIp : partnerIp,
         gateway: '192.168.1.1',
         status: incidents.ipConflictFixed ? 'ok' : 'ip-conflict',
-        traffic: '0.4 KB/s',
+        traffic: incidents.ipConflictFixed ? '0.4 KB/s' : '0.0 KB/s (Conflict Drop)',
       };
     }
-    if (num === 5) {
+
+    // 2. Wrong Gateway PC
+    if (num === scenario.gatewayPc) {
       return {
-        num: 5,
-        ip: '192.168.1.15',
-        gateway: incidents.wrongGatewayFixed ? '192.168.1.1' : '192.168.0.1',
+        num,
+        ip: `192.168.1.${10 + num}`,
+        gateway: incidents.wrongGatewayFixed ? '192.168.1.1' : scenario.badGateway,
         status: incidents.wrongGatewayFixed ? 'ok' : 'wrong-gateway',
-        traffic: '0.0 KB/s (Drop)',
+        traffic: incidents.wrongGatewayFixed ? '0.5 KB/s' : '0.0 KB/s (Drop)',
       };
     }
-    if (num === 9) {
+
+    // 3. Virus / Botnet PC
+    if (num === scenario.virusPc) {
       return {
-        num: 9,
-        ip: '192.168.1.19',
+        num,
+        ip: `192.168.1.${10 + num}`,
         gateway: '192.168.1.1',
         status: incidents.virusQuarantined ? 'ok' : 'infected',
-        traffic: incidents.virusQuarantined ? '0.8 KB/s' : '54,200 pkt/s (DDoS)',
+        traffic: incidents.virusQuarantined ? '0.6 KB/s' : scenario.virusTrafficRate,
       };
     }
+
+    // Healthy standard PC
     return {
       num,
       ip: `192.168.1.${10 + num}`,
@@ -149,6 +216,9 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
   const handleOpenPc = (num: number) => {
     soundEffects.click(soundEnabled);
     setInspectedPcNum(num);
+    if (!inspectedPcs.includes(num)) {
+      setInspectedPcs((prev) => [...prev, num]);
+    }
     setInputIp('');
     setInputGateway('');
     setTerminalInput('');
@@ -156,22 +226,25 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
     setFormFeedback(null);
   };
 
-  // Submit typed IP for PC-07
+  // Submit typed IP for IP Conflict
   const handleSubmitIp = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanIp = inputIp.trim();
 
-    if (cleanIp === '192.168.1.17' || cleanIp === '17') {
+    if (cleanIp === scenario.freeIp || cleanIp === scenario.freeIp.split('.').pop()) {
       soundEffects.cablePlug(soundEnabled);
       setIncidents((prev) => ({ ...prev, ipConflictFixed: true }));
       setFormFeedback({ type: 'success', message: t.task2CorrectIpMsg });
     } else {
       soundEffects.trapWarning(soundEnabled);
-      setFormFeedback({ type: 'error', message: t.task2WrongIpMsg });
+      setFormFeedback({ 
+        type: 'error', 
+        message: `${t.task2WrongIpMsg} (Tavsiya: ${scenario.freeIp})` 
+      });
     }
   };
 
-  // Submit typed Gateway for PC-05
+  // Submit typed Gateway
   const handleSubmitGateway = (e: React.FormEvent) => {
     e.preventDefault();
     const cleanGw = inputGateway.trim();
@@ -186,7 +259,7 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
     }
   };
 
-  // Submit typed terminal command for PC-09
+  // Submit typed terminal command for Virus Botnet
   const handleTerminalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const cmd = terminalInput.trim().toLowerCase();
@@ -195,11 +268,11 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
       soundEffects.pingSonar(soundEnabled);
       setIsScanning(true);
       setTerminalLogs([
-        `admin@pc-09:~$ ${terminalInput}`,
-        `[INFO] Starting deep memory & network socket scan...`,
-        `[ALERT] Detected malicious process: 'botnet_ddos.exe' (PID: 4912)`,
-        `[ACTION] Terminating socket connection on port 4444...`,
-        `[SUCCESS] Quarantine complete! Packet flood neutralized.`,
+        `admin@pc-${scenario.virusPc.toString().padStart(2, '0')}:~$ ${terminalInput}`,
+        `[INFO] Starting memory & network socket diagnostics...`,
+        `[ALERT] Detected malicious daemon: 'botnet_flood.bin' (PID: 7824)`,
+        `[ACTION] Neutralizing socket connection on port 4444...`,
+        `[SUCCESS] Quarantine complete! DDoS packet stream terminated.`,
       ]);
 
       setTimeout(() => {
@@ -207,13 +280,13 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
         setIncidents((prev) => ({ ...prev, virusQuarantined: true }));
         setFormFeedback({ type: 'success', message: t.task2CorrectCmdMsg });
         soundEffects.successFanfare(soundEnabled);
-      }, 1800);
+      }, 1600);
     } else {
       soundEffects.trapWarning(soundEnabled);
       setTerminalLogs((prev) => [
         ...prev,
-        `admin@pc-09:~$ ${terminalInput}`,
-        `bash: command not found: '${terminalInput}'. Tavsiya: 'antivirus scan' yoki 'scan' deb yozing!`,
+        `admin@pc-${scenario.virusPc.toString().padStart(2, '0')}:~$ ${terminalInput}`,
+        `bash: command not found: '${terminalInput}'. Tavsiya: 'scan' yoki 'antivirus scan' deb yozing!`,
       ]);
       setFormFeedback({ type: 'error', message: t.task2WrongCmdMsg });
     }
@@ -240,7 +313,17 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Random Scenario Button */}
+            <button
+              onClick={handleRandomizeScenario}
+              className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Yangi tasodifiy kompyuterlar nosozligini generatsiya qilish"
+            >
+              <Dices className="w-3.5 h-3.5" />
+              <span>{t.task2RandomScenarioBtn}</span>
+            </button>
+
             {/* 10-Minute Countdown Clock */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
               <Clock className={`w-4 h-4 ${timeLeft <= 60 ? 'text-rose-400 animate-spin' : 'text-amber-400'}`} />
@@ -304,15 +387,16 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
               Ofisdagi 10 ta Kompyuterni Tekshirish uchun Ustiga Bosing:
             </span>
             <span className="text-[11px] text-slate-400">
-              Barcha kompyuter parametrlarini birma-bir ko'rib chiqing
+              {inspectedPcs.length} / 10 ta kompyuter ko'zdan kechirildi
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {Array.from({ length: 10 }).map((_, idx) => {
               const pcNum = idx + 1;
-              const pcData = getPcData(pcNum);
               const isSelected = inspectedPcNum === pcNum;
+              const isInspected = inspectedPcs.includes(pcNum);
+              const pcData = getPcData(pcNum);
 
               return (
                 <div
@@ -321,15 +405,21 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                   className={`p-3 rounded-xl border cursor-pointer transition-all ${
                     isSelected
                       ? 'border-cyan-400 bg-cyan-950/40 ring-1 ring-cyan-400 shadow-md'
+                      : !isInspected
+                      ? 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/20'
                       : pcData.status !== 'ok'
                       ? 'border-rose-500/40 bg-rose-950/20 hover:border-rose-400 shadow-sm'
-                      : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/20'
+                      : 'border-emerald-500/20 bg-emerald-950/10 hover:border-emerald-500/40'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-1.5">
                       <Monitor className={`w-4 h-4 ${
-                        pcData.status === 'ok' ? 'text-slate-300' : 'text-rose-400 animate-pulse'
+                        !isInspected
+                          ? 'text-slate-400'
+                          : pcData.status === 'ok'
+                          ? 'text-emerald-400'
+                          : 'text-rose-400 animate-pulse'
                       }`} />
                       <span className="text-xs font-bold text-white">
                         PC-{pcNum.toString().padStart(2, '0')}
@@ -337,18 +427,34 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                     </div>
 
                     <span className={`w-2 h-2 rounded-full ${
-                      pcData.status === 'ok' ? 'bg-emerald-400' : 'bg-rose-500 animate-ping'
+                      !isInspected
+                        ? 'bg-slate-600'
+                        : pcData.status === 'ok'
+                        ? 'bg-emerald-400'
+                        : 'bg-rose-500 animate-ping'
                     }`} />
                   </div>
 
                   <div className="text-[10px] font-mono text-slate-400 mb-1">
-                    {pcData.ip}
+                    {isInspected ? pcData.ip : '192.168.1.???'}
                   </div>
 
                   <div className="flex items-center justify-between text-[9px]">
-                    <span className="text-slate-500">Gw: {pcData.gateway}</span>
-                    <span className={`font-mono ${pcData.status === 'ok' ? 'text-slate-400' : 'text-rose-400 font-bold'}`}>
-                      {pcData.status === 'ok' ? 'OK' : 'XATO'}
+                    <span className="text-slate-500">
+                      {isInspected ? `Gw: ${pcData.gateway}` : 'Shlyuz: ?'}
+                    </span>
+                    <span className={`font-mono font-bold ${
+                      !isInspected
+                        ? 'text-slate-500'
+                        : pcData.status === 'ok'
+                        ? 'text-emerald-400'
+                        : 'text-rose-400'
+                    }`}>
+                      {!isInspected 
+                        ? (language === 'uz' ? 'Tekshirish' : 'Проверить') 
+                        : pcData.status === 'ok' 
+                        ? 'OK' 
+                        : 'XATO'}
                     </span>
                   </div>
                 </div>
@@ -440,14 +546,14 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
 
               {/* SPECIFIC FIX SECTION WITH REQUIRED MANUAL TYPING */}
               
-              {/* CASE 1: PC-07 IP CONFLICT (User must type free IP) */}
-              {inspectedPcNum === 7 && !incidents.ipConflictFixed && (
+              {/* CASE 1: IP CONFLICT */}
+              {inspectedPcNum === scenario.conflictPc && !incidents.ipConflictFixed && (
                 <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-500/30 space-y-3">
                   <div className="flex items-start gap-2.5">
                     <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                     <div className="text-xs text-rose-200 leading-relaxed">
-                      <strong>IP-Ziddiyat aniqlandi!</strong> PC-07 ning IP manzili (192.168.1.13) PC-03 bilan bir xil bo'lib qolgan.
-                      Ofisda 192.168.1.17 manzili bo'sh turibdi. Quyidagi maydonga to'g'ri bo'sh IP manzilni klaviaturada yozing:
+                      <strong>IP-Ziddiyat aniqlandi!</strong> PC-{scenario.conflictPc.toString().padStart(2, '0')} ning IP manzili PC-{scenario.partnerPc.toString().padStart(2, '0')} bilan bir xil bo'lib qolgan.
+                      Ofisda <strong>{scenario.freeIp}</strong> manzili bo'sh turibdi. Quyidagi maydonga to'g'ri bo'sh IP manzilni klaviaturada yozing:
                     </div>
                   </div>
 
@@ -456,7 +562,7 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                       type="text"
                       value={inputIp}
                       onChange={(e) => setInputIp(e.target.value)}
-                      placeholder={t.task2InputIpPlaceholder}
+                      placeholder={`masalan: ${scenario.freeIp}`}
                       className="flex-1 px-3 py-2 rounded-xl bg-black/60 border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-cyan-400 placeholder:text-slate-600"
                     />
                     <button
@@ -469,13 +575,13 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                 </div>
               )}
 
-              {/* CASE 2: PC-05 WRONG GATEWAY (User must type router gateway) */}
-              {inspectedPcNum === 5 && !incidents.wrongGatewayFixed && (
+              {/* CASE 2: WRONG GATEWAY */}
+              {inspectedPcNum === scenario.gatewayPc && !incidents.wrongGatewayFixed && (
                 <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 space-y-3">
                   <div className="flex items-start gap-2.5">
                     <Wrench className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                     <div className="text-xs text-amber-200 leading-relaxed">
-                      <strong>Shlyuz xatosi!</strong> PC-05 da Default Gateway noto'g'ri (192.168.0.1) kiritilgan.
+                      <strong>Shlyuz xatosi!</strong> PC-{scenario.gatewayPc.toString().padStart(2, '0')} da Default Gateway noto'g'ri ({scenario.badGateway}) kiritilgan.
                       Router shlyuz manzilini klaviaturada to'g'ri yozib saqlang:
                     </div>
                   </div>
@@ -498,13 +604,13 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                 </div>
               )}
 
-              {/* CASE 3: PC-09 MALWARE DDOS BOT (User must type terminal command) */}
-              {inspectedPcNum === 9 && !incidents.virusQuarantined && (
+              {/* CASE 3: MALWARE DDOS BOT */}
+              {inspectedPcNum === scenario.virusPc && !incidents.virusQuarantined && (
                 <div className="p-4 rounded-xl bg-purple-950/30 border border-purple-500/30 space-y-3">
                   <div className="flex items-start gap-2.5">
                     <ShieldAlert className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                     <div className="text-xs text-purple-200 leading-relaxed">
-                      <strong>Kiberhujum aniqlandi!</strong> PC-09 noma'lum virusli botnet orqali switchni to'ldirmoqda.
+                      <strong>Kiberhujum aniqlandi!</strong> PC-{scenario.virusPc.toString().padStart(2, '0')} noma'lum virusli botnet orqali switchni to'ldirmoqda.
                       Terminalda buyruqni qo'lda yozib kiberxavfsizlik tozalashini ishga tushiring:
                     </div>
                   </div>
@@ -518,22 +624,21 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                       </div>
                     ))}
                     {isScanning && (
-                      <div className="text-cyan-400 animate-pulse pt-1">
-                        ... Antivirus xotira va tarmoq portlarini skanerlamoqda ...
+                      <div className="text-amber-400 animate-pulse">
+                        &gt; Tizim xotirasi tekshirilmoqda va zararli soketlar bloklanmoqda...
                       </div>
                     )}
                   </div>
 
                   <form onSubmit={handleTerminalSubmit} className="flex flex-col sm:flex-row items-stretch gap-2">
-                    <div className="flex-1 flex items-center bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs font-mono text-white">
-                      <span className="text-cyan-400 mr-2">$</span>
+                    <div className="flex-1 flex items-center bg-black/60 border border-white/20 rounded-xl px-3 focus-within:border-purple-400">
+                      <span className="text-slate-500 font-mono text-xs mr-2">$</span>
                       <input
                         type="text"
-                        disabled={isScanning}
                         value={terminalInput}
                         onChange={(e) => setTerminalInput(e.target.value)}
                         placeholder={t.task2CommandPlaceholder}
-                        className="flex-1 bg-transparent border-none text-white focus:outline-none placeholder:text-slate-600"
+                        className="flex-1 py-2 bg-transparent text-white font-mono text-xs focus:outline-none placeholder:text-slate-600"
                       />
                     </div>
                     <button
@@ -547,9 +652,9 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                 </div>
               )}
 
-              {/* If PC has no issues */}
+              {/* HEALTHY DEVICE MESSAGE */}
               {pcData.status === 'ok' && (
-                <div className="p-3.5 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-2">
+                <div className="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{t.task2HealthyDevice}</span>
                 </div>
@@ -558,18 +663,18 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
           );
         })()}
 
-        {/* Success Banner when All 3 are Resolved */}
+        {/* Success Banner when all 3 resolved */}
         {allResolved && (
-          <div className="p-5 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-3">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-teal-950/80 border border-emerald-500/40 flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-2">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <CheckCircle2 className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">
+                <h4 className="text-xs sm:text-sm font-bold text-white">
                   {t.task2SuccessTitle}
-                </h3>
-                <p className="text-xs text-slate-300 mt-0.5">
+                </h4>
+                <p className="text-[11px] text-slate-300">
                   {t.task2SuccessDesc}
                 </p>
               </div>
@@ -580,10 +685,10 @@ export const Task2Troubleshoot: React.FC<Task2TroubleshootProps> = ({
                 soundEffects.successFanfare(soundEnabled);
                 onProceedToTask3();
               }}
-              className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 shrink-0"
+              className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/20 shrink-0"
             >
               <span>{t.nextTaskBtn}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}

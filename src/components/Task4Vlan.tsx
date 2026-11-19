@@ -7,7 +7,9 @@ import {
   Award, 
   Users, 
   HelpCircle,
-  Activity
+  Activity,
+  Dices,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { Language, DepartmentId } from '../types';
@@ -22,6 +24,19 @@ interface Task4VlanProps {
   isTaskCompleted: boolean;
 }
 
+// Helper to generate a random 5-and-5 split of numbers 1..10
+function generateRandomPlan(): { accounting: number[]; sales: number[] } {
+  const allNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  // Shuffle
+  for (let i = allNums.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allNums[i], allNums[j]] = [allNums[j], allNums[i]];
+  }
+  const accounting = allNums.slice(0, 5).sort((a, b) => a - b);
+  const sales = allNums.slice(5).sort((a, b) => a - b);
+  return { accounting, sales };
+}
+
 export const Task4Vlan: React.FC<Task4VlanProps> = ({
   language,
   soundEnabled,
@@ -31,18 +46,48 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
 }) => {
   const t = translations[language];
 
-  // 10 PCs department assignment
-  // Target: PCs 1-5 = Accounting, PCs 6-10 = Sales
-  const [assignments, setAssignments] = useState<Record<number, DepartmentId>>(
-    isTaskCompleted
-      ? { 1: 'accounting', 2: 'accounting', 3: 'accounting', 4: 'accounting', 5: 'accounting', 6: 'sales', 7: 'sales', 8: 'sales', 9: 'sales', 10: 'sales' }
-      : { 1: 'accounting', 2: 'sales', 3: 'accounting', 4: 'sales', 5: 'sales', 6: 'accounting', 7: 'sales', 8: 'sales', 9: 'accounting', 10: 'sales' }
-  );
+  // Target random plan: 5 PCs for Accounting, 5 PCs for Sales
+  const [targetPlan, setTargetPlan] = useState<{ accounting: number[]; sales: number[] }>(() => {
+    return generateRandomPlan();
+  });
+
+  // Current assignments for 10 PCs
+  const [assignments, setAssignments] = useState<Record<number, DepartmentId>>(() => {
+    if (isTaskCompleted) {
+      const init: Record<number, DepartmentId> = {};
+      targetPlan.accounting.forEach((num) => (init[num] = 'accounting'));
+      targetPlan.sales.forEach((num) => (init[num] = 'sales'));
+      return init;
+    }
+    // Initial scrambled state
+    const scrambled: Record<number, DepartmentId> = {};
+    for (let i = 1; i <= 10; i++) {
+      scrambled[i] = Math.random() > 0.5 ? 'accounting' : 'sales';
+    }
+    return scrambled;
+  });
 
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [verificationResult, setVerificationResult] = useState<'passed' | 'failed' | null>(
     isTaskCompleted ? 'passed' : null
   );
+  const [mismatchedPcs, setMismatchedPcs] = useState<Array<{ pc: number; expected: DepartmentId; actual: DepartmentId }>>([]);
+
+  // Generate a brand new random target plan
+  const handleRandomizePlan = () => {
+    soundEffects.click(soundEnabled);
+    const newPlan = generateRandomPlan();
+    setTargetPlan(newPlan);
+
+    // Scramble assignments
+    const scrambled: Record<number, DepartmentId> = {};
+    for (let i = 1; i <= 10; i++) {
+      scrambled[i] = Math.random() > 0.5 ? 'accounting' : 'sales';
+    }
+    setAssignments(scrambled);
+    setVerificationResult(null);
+    setMismatchedPcs([]);
+  };
 
   const handleToggleDept = (pcNum: number) => {
     soundEffects.click(soundEnabled);
@@ -51,31 +96,38 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
       [pcNum]: prev[pcNum] === 'accounting' ? 'sales' : 'accounting',
     }));
     setVerificationResult(null);
+    setMismatchedPcs([]);
   };
 
   const handleAutoAssign = () => {
     soundEffects.cablePlug(soundEnabled);
-    setAssignments({
-      1: 'accounting', 2: 'accounting', 3: 'accounting', 4: 'accounting', 5: 'accounting',
-      6: 'sales', 7: 'sales', 8: 'sales', 9: 'sales', 10: 'sales'
-    });
+    const perfect: Record<number, DepartmentId> = {};
+    targetPlan.accounting.forEach((num) => (perfect[num] = 'accounting'));
+    targetPlan.sales.forEach((num) => (perfect[num] = 'sales'));
+    setAssignments(perfect);
     setVerificationResult(null);
+    setMismatchedPcs([]);
   };
 
   const handleVerify = () => {
     soundEffects.pingSonar(soundEnabled);
     setIsVerifying(true);
     setVerificationResult(null);
+    setMismatchedPcs([]);
 
     setTimeout(() => {
       setIsVerifying(false);
 
-      // Check if PCs 1-5 are accounting and PCs 6-10 are sales
-      const isCorrect = 
-        [1, 2, 3, 4, 5].every((num) => assignments[num] === 'accounting') &&
-        [6, 7, 8, 9, 10].every((num) => assignments[num] === 'sales');
+      const errors: Array<{ pc: number; expected: DepartmentId; actual: DepartmentId }> = [];
+      for (let i = 1; i <= 10; i++) {
+        const expected: DepartmentId = targetPlan.accounting.includes(i) ? 'accounting' : 'sales';
+        const actual = assignments[i];
+        if (expected !== actual) {
+          errors.push({ pc: i, expected, actual });
+        }
+      }
 
-      if (isCorrect) {
+      if (errors.length === 0) {
         setVerificationResult('passed');
         soundEffects.successFanfare(soundEnabled);
         try {
@@ -90,9 +142,10 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
         onCompleteTask4();
       } else {
         setVerificationResult('failed');
+        setMismatchedPcs(errors);
         soundEffects.trapWarning(soundEnabled);
       }
-    }, 1500);
+    }, 1200);
   };
 
   const accountingCount = Object.values(assignments).filter((d) => d === 'accounting').length;
@@ -118,13 +171,76 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={handleAutoAssign}
-            className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors border border-white/[0.06]"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Standart taqsimlash (5 + 5)</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRandomizePlan}
+              className="px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-indigo-500/30"
+              title="Yangi tasodifiy bo'limlar rejasini generatsiya qilish"
+            >
+              <Dices className="w-3.5 h-3.5" />
+              <span>{t.task4RandomPlanBtn}</span>
+            </button>
+
+            <button
+              onClick={handleAutoAssign}
+              className="px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 text-xs font-medium flex items-center gap-1.5 transition-colors border border-white/[0.06]"
+              title="Reja bo'yicha to'g'ri taqsimlash"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{language === 'uz' ? 'Reja bo\'yicha to\'ldirish' : 'Заполнить по плану'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* RANDOM OFFICE HR TARGET PLAN CARD */}
+        <div className="p-4 rounded-xl bg-slate-900/70 border border-indigo-500/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-indigo-400" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                {t.task4TargetPlanTitle}
+              </span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+              {language === 'uz' ? 'Tasodifiy Reja' : 'Случайный план'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            {/* Target Accounting */}
+            <div className="p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-500/20">
+              <span className="text-indigo-300 block font-semibold mb-1.5">
+                {t.task4AccountingTargetLabel}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {targetPlan.accounting.map((pcNum) => (
+                  <span 
+                    key={pcNum} 
+                    className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-indigo-500/30 text-indigo-200 border border-indigo-500/40"
+                  >
+                    PC-{pcNum.toString().padStart(2, '0')}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Target Sales */}
+            <div className="p-2.5 rounded-lg bg-cyan-950/30 border border-cyan-500/20">
+              <span className="text-cyan-300 block font-semibold mb-1.5">
+                {t.task4SalesTargetLabel}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {targetPlan.sales.map((pcNum) => (
+                  <span 
+                    key={pcNum} 
+                    className="px-2 py-0.5 rounded font-mono font-bold text-[11px] bg-cyan-500/30 text-cyan-200 border border-cyan-500/40"
+                  >
+                    PC-{pcNum.toString().padStart(2, '0')}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* 2 Department Cards Summary */}
@@ -173,7 +289,7 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
               10 ta Ishchi Kompyuterni Bo'limlarga Biriktiring:
             </span>
             <span className="text-[11px] text-slate-400">
-              PC 01-05 ➔ Buxgalteriya, PC 06-10 ➔ Sotuv
+              Yuqoridagi xavfsizlik rejasiga qarab har bir kompyuterni moslang
             </span>
           </div>
 
@@ -182,15 +298,18 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
               const pcNum = idx + 1;
               const dept = assignments[pcNum];
               const isAccounting = dept === 'accounting';
+              const hasMismatch = mismatchedPcs.some((m) => m.pc === pcNum);
 
               return (
                 <div
                   key={pcNum}
                   onClick={() => handleToggleDept(pcNum)}
                   className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                    isAccounting
-                      ? 'bg-indigo-950/40 border-indigo-500/40 shadow-sm'
-                      : 'bg-cyan-950/40 border-cyan-500/40 shadow-sm'
+                    hasMismatch
+                      ? 'bg-rose-950/40 border-rose-500 ring-1 ring-rose-500'
+                      : isAccounting
+                      ? 'bg-indigo-950/40 border-indigo-500/40 hover:border-indigo-400 shadow-sm'
+                      : 'bg-cyan-950/40 border-cyan-500/40 hover:border-cyan-400 shadow-sm'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -210,12 +329,34 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
                       ? 'bg-indigo-500 text-white'
                       : 'bg-cyan-500 text-slate-950'
                   }`}>
-                    {isAccounting ? 'VLAN 10 (Buxgalteriya)' : 'VLAN 20 (Sotuv)'}
+                    {isAccounting ? 'VLAN 10 (Buxg.)' : 'VLAN 20 (Sotuv)'}
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Mismatch Warning Alert */}
+          {mismatchedPcs.length > 0 && (
+            <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-xs text-rose-300 space-y-1 animate-in fade-in">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertTriangle className="w-4 h-4 text-rose-400" />
+                <span>{language === 'uz' ? 'Xavfsizlik matritsasida nomuvofiqlik aniqlandi:' : 'Обнаружено несоответствие матрице безопасности:'}</span>
+              </div>
+              <div className="pl-6 space-y-0.5 text-[11px]">
+                {mismatchedPcs.map((m) => {
+                  const deptName = m.expected === 'accounting' 
+                    ? (language === 'uz' ? 'Buxgalteriya (VLAN 10)' : 'Бухгалтерия (VLAN 10)')
+                    : (language === 'uz' ? 'Savdo bo\'limi (VLAN 20)' : 'Отдел продаж (VLAN 20)');
+                  return (
+                    <div key={m.pc}>
+                      • PC-{m.pc.toString().padStart(2, '0')}: {language === 'uz' ? `kutilgan bo'lim — ${deptName}` : `требуемый отдел — ${deptName}`}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Action: Verify Matrix */}
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/[0.06]">
@@ -227,10 +368,10 @@ export const Task4Vlan: React.FC<Task4VlanProps> = ({
                 </span>
               ) : verificationResult === 'failed' ? (
                 <span className="text-rose-400 font-semibold">
-                  Taqsimot xato! PC 1-5 Buxgalteriya, PC 6-10 Sotuv bo'limi bo'lishi kerak.
+                  {language === 'uz' ? 'Reja bo\'yicha moslashtirib qayta tekshiring.' : 'Сверьтесь с планом и повторите проверку.'}
                 </span>
               ) : (
-                <span>Taqsimotni yakunlab tekshirish tugmasini bosing.</span>
+                <span>Taqsimotni reja bo'yicha yakunlab tekshirish tugmasini bosing.</span>
               )}
             </div>
 

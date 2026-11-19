@@ -14,20 +14,20 @@ Topshiriqlar ketma-ket ochiladi: o'quvchi 1-topshiriqni muvaffaqiyatli himoya qi
 - "Buyurtmachi qo'ng'irog'i" (Dinamik voqea) ➔ Mehmon Wi-Fi.
 - 60 soniyalik dars himoya nutqi (Prezentatsiya).
 
-### 2️⃣ 2-Topshiriq: "Tarmoq Avariyasi va Diagnostika" (10 daqiqa)
-- 10 daqiqalik sinov taymeri!
-- Tarmoqdagi 3 ta real muammoni topish va tuzatish:
-  1. **IP Conflict:** PC-03 va PC-07 ning bir xil `192.168.1.13` IP ziddiyatini to'g'rilash (`192.168.1.17`).
-  2. **Wrong Gateway:** PC-05 shlyuzi `192.168.0.1` xatosini router shlyuzi `192.168.1.1` ga o'zgartirish.
-  3. **Malware / DDoS:** PC-09 dagi virusli botnetni aniqlash, izolyatsiya qilish va antivirus tozalash.
+### 2️⃣ 2-Topshiriq: "Tarmoq Avariyasi va Diagnostika" (10 daqiqa, Tasodifiy Kvest)
+- 10 daqiqalik sinov taymeri va noaniqlik sharoitida tekshiruv (10 ta kompyuterni birma-bir ochib ko'rish).
+- Har gal **tasodifiy generatsiya qilinadigan 3 ta nosozlik**:
+  1. **IP Conflict:** Tasodifiy kompyuterda IP ziddiyati. Bo'sh IP manzil klaviaturadan qo'lda kiritiladi.
+  2. **Wrong Gateway:** Noto'g'ri kiritilgan shlyuzni aniqlash va router shlyuzini (`192.168.1.1`) qo'lda kiritish.
+  3. **Malware / DDoS:** Virusli botnetni aniqlash va Terminal konsolida `scan` yoki `antivirus scan` deb yozish.
 
-### 3️⃣ 3-Topshiriq: "RJ-45 UTP Kabelni Siqish Laboratoriyasi" (T568B Standarti)
-- EIA/TIA-568B standarti bo'yicha 8 ta rangli simni RJ-45 konnektori uyalariga to'g'ri tartibda terish:
-  *(Oq-to'q sariq, To'q sariq, Oq-yashil, Moviy, Oq-moviy, Yashil, Oq-jigarrang, Jigarrang)*.
-- 8 kanalli interaktiv kabel testerida ketma-ket (1 dan 8 gacha) signalni tekshirish va 1 Gbps sertifikatlash.
+### 3️⃣ 3-Topshiriq: "RJ-45 UTP Kabelni Siqish Laboratoriyasi" (Tasodifiy T568A / T568B)
+- Tasodifiy ravishda **EIA/TIA-568A** yoki **EIA/TIA-568B** standarti buyurtma qilinadi.
+- 8 ta rangli sim pastdagi panelda **aralashtirilgan tartibda** beriladi (o'quvchi standartni bilishi shart).
+- 8 kanalli interaktiv kabel testerida tekshirish; noto'g'ri sim qo'yilgan pin qizil LED va xato diagnostikasi bilan ko'rsatiladi.
 
-### 4️⃣ 4-Topshiriq: "Bo'limlararo VLAN va IP Segmentatsiya"
-- 10 ta ishchi kompyuterni 2 ta mustaqil bo'limga ajratish:
+### 4️⃣ 4-Topshiriq: "Bo'limlararo VLAN va IP Segmentatsiya" (Tasodifiy Reja)
+- Kompaniya ichki xavfsizlik rejasi har gal 10 ta kompyuterni **tasodifiy 5+5 tartibda** taqsimlaydi:
   - **Buxgalteriya va Kadrlar (VLAN 10):** Statik IP, umumiy printerga to'liq ruxsat.
   - **Sotuv va Marketing (VLAN 20):** Dinamik DHCP IP, printer bloklangan (faqat internet).
 - Xavfsizlik matritsasi orqali tekshirish va yakuniy **"Senior Tarmoq Muhandisi Sertifikati"**ni qo'lga kiritish!

@@ -71,12 +71,24 @@ export interface EvaluationResult {
 
 // TASK 2: TROUBLESHOOTING TYPES
 export interface IncidentState {
-  ipConflictFixed: boolean;     // PC-07 IP corrected from 192.168.1.13 to 192.168.1.17
-  wrongGatewayFixed: boolean;   // PC-05 Gateway corrected from 192.168.0.1 to 192.168.1.1
-  virusQuarantined: boolean;    // PC-09 Malware scanned and quarantined
+  ipConflictFixed: boolean;     // IP corrected to free IP
+  wrongGatewayFixed: boolean;   // Gateway corrected to 192.168.1.1
+  virusQuarantined: boolean;    // Malware scanned and quarantined
+}
+
+export interface Task2Scenario {
+  conflictPc: number;
+  partnerPc: number;
+  freeIp: string;
+  gatewayPc: number;
+  badGateway: string;
+  virusPc: number;
+  virusTrafficRate: string;
 }
 
 // TASK 3: RJ-45 CRIMPING TYPES
+export type CrimpStandard = 'T568B' | 'T568A';
+
 export type WireColorId = 
   | 'white-orange' 
   | 'orange' 
@@ -97,6 +109,11 @@ export interface WireColorInfo {
 
 // TASK 4: DEPARTMENT & VLAN TYPES
 export type DepartmentId = 'accounting' | 'sales';
+
+export interface Task4TargetPlan {
+  accountingPcs: number[];
+  salesPcs: number[];
+}
 
 export interface DepartmentSetting {
   id: DepartmentId;
