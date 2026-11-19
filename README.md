@@ -1,34 +1,36 @@
 # Tarmoq Loyihasi: 10 Kishilik Ofis / Сетевой проект: Офис на 10 человек
-> **Al-Beruniy nomidagi ta'limiy loyiha — 8-sinf Informatika va axborot texnologiyalari fani uchun interaktiv 2D tarmoq arxitekturasi simulyatori va 60 soniyalik himoya nutqi platformasi.**
+> **Al-Beruniy nomidagi ta'limiy loyiha — 8-sinf Informatika va axborot texnologiyalari fani uchun 4 bosqichli interaktiv tarmoq arxitekturasi va kiberxavfsizlik simulyatori.**
 
 ---
 
-## 🌐 Loyiha Haqida / О проекте
+## 🌐 4 Bosqichli Ketma-ket O'quv Dasturi / 4-Этапная Учебная Программа
 
-Ushbu interaktiv simulyator o'quvchilarga 10 kishilik kichik ofis uchun mahalliy hisoblash tarmog'ini (**LAN**) tejamkor va xavfsiz loyihalashni o'rgatadi. 
+Topshiriqlar ketma-ket ochiladi: o'quvchi 1-topshiriqni muvaffaqiyatli himoya qilgandan so'ngгина keyingi bosqichlar qulfdan yechiladi!
 
-O'yin 8-sinf Informatika darsligi dasturi asosida tuzilgan bo'lib, o'quvchi **Tarmoq Muhandisi** rolida $250 (yoki qat'iy -10% chellenjda $225) byudjet doirasida optimal uskunalar va 5 ta kiberxavfsizlik chorasini tanlashi kerak.
+### 1️⃣ 1-Topshiriq: "Tarmoq Loyihasi" (Star Topology & $250 Budget)
+- 10 kishilik ofis uchun yulduzsimon (Star) mahalliy tarmoqni yig'ish.
+- Internet (ISP), Wi-Fi Router, 16 portli Gigabit Switch, 10 ta PC, printer, kabellar.
+- 5 ta Kiberxavfsizlik choralari ($0).
+- "Buyurtmachi qo'ng'irog'i" (Dinamik voqea) ➔ Mehmon Wi-Fi.
+- 60 soniyalik dars himoya nutqi (Prezentatsiya).
 
----
+### 2️⃣ 2-Topshiriq: "Tarmoq Avariyasi va Diagnostika" (10 daqiqa)
+- 10 daqiqalik sinov taymeri!
+- Tarmoqdagi 3 ta real muammoni topish va tuzatish:
+  1. **IP Conflict:** PC-03 va PC-07 ning bir xil `192.168.1.13` IP ziddiyatini to'g'rilash (`192.168.1.17`).
+  2. **Wrong Gateway:** PC-05 shlyuzi `192.168.0.1` xatosini router shlyuzi `192.168.1.1` ga o'zgartirish.
+  3. **Malware / DDoS:** PC-09 dagi virusli botnetni aniqlash, izolyatsiya qilish va antivirus tozalash.
 
-## ✨ Asosiy Imkoniyatlar / Ключевые возможности
+### 3️⃣ 3-Topshiriq: "RJ-45 UTP Kabelni Siqish Laboratoriyasi" (T568B Standarti)
+- EIA/TIA-568B standarti bo'yicha 8 ta rangli simni RJ-45 konnektori uyalariga to'g'ri tartibda terish:
+  *(Oq-to'q sariq, To'q sariq, Oq-yashil, Moviy, Oq-moviy, Yashil, Oq-jigarrang, Jigarrang)*.
+- 8 kanalli interaktiv kabel testerida ketma-ket (1 dan 8 gacha) signalni tekshirish va 1 Gbps sertifikatlash.
 
-- 🇺🇿 🇷🇺 **To'liq ikki tilli interfeys (Bilingual UZ | RU):** Bir bosishda butun interfeys, texnik parametrlar, buyurtmachi qo'ng'irog'i va 60 soniyalik dars nutqi o'zbek va rus tillari o'rtasida sinxronlashadi.
-- 🎨 **Minimalistik va zamonaviy UI/UX:** Linear / Figma uslubidagi toza interfeys, ko'zni charchatmaydigan nozik nuqtali muhandislik to'ri (dot-pattern grid) va shaffof glassmorphism elementlari.
-- 📐 **Diagrams.net uslubidagi Yulduzsimon (Star) Topologiya:** 
-  - Internet (ISP) ➔ Wi-Fi Router ➔ 16-port Gigabit Switch ➔ 10 PC + 1 Printer + Mehmon Wi-Fi.
-  - SVG orqali animatsion oqayotgan ma'lumotlar paketlari (Data flow pulses).
-- ⚠️ **Pedagogik "8-Portli Switch" Tuzog'i:** O'quvchi arzonroq 8-portli switchni tanlaganda, port yetishmasligi (12 ta ulanish zarur, atigi 7 ta bo'sh port) va 4 ta xodim internetsiz qolishi haqida tushuntirish beruvchi ta'limiy ogohlantirish.
-- 📞 **Dinamik Voqea — "Buyurtmachi qo'ng'irog'i" (Client Call):** Real vaqtda telefon qo'ng'irog'i ovozi bilan keluvchi shoshilinch topshiriq (izolyatsiyalangan Mehmon Wi-Fi zonasini qo'shish).
-- 🛡️ **5 Kiberxavfsizlik Qoidasi ($0):**
-  1. Mehmon Wi-Fi izolyatsiyasi (Guest Zone / VLAN)
-  2. WPA2/WPA3 kuchli shifrlash va 12+ belgili parol
-  3. Router Admin standart parolini yangilash
-  4. Tarmoqlararo ekran (Firewall)
-  5. Antivirus va OT yangilanishi
-- 📡 **ICMP Ping Tarmoq Diagnostikasi:** Paketlarni yo'naltirish, kechikish (latency) va 0% paket yo'qotilishini simulyatsiya qiluvchi terminal oynasi.
-- 🎓 **60 Soniyalik Taqdimot Himoya Nutqi:** O'quvchi sinfda doskaga chiqib loyihani himoya qilishi uchun soniyalar bo'yicha tayyor nutq matni, nusxa olish tugmasi va mashq qilish uchun **60 soniyalik interaktiv nutq taymeri**.
-- 🔊 **Web Audio API Ovoz Effektlari:** 100% oflayn ishlovchi simulyatsiya tovushlari (kabel chertilishi, telefon jiringlashi, radar sonar, zafar akkordi).
+### 4️⃣ 4-Topshiriq: "Bo'limlararo VLAN va IP Segmentatsiya"
+- 10 ta ishchi kompyuterni 2 ta mustaqil bo'limga ajratish:
+  - **Buxgalteriya va Kadrlar (VLAN 10):** Statik IP, umumiy printerga to'liq ruxsat.
+  - **Sotuv va Marketing (VLAN 20):** Dinamik DHCP IP, printer bloklangan (faqat internet).
+- Xavfsizlik matritsasi orqali tekshirish va yakuniy **"Senior Tarmoq Muhandisi Sertifikati"**ni qo'lga kiritish!
 
 ---
 
@@ -39,6 +41,7 @@ O'yin 8-sinf Informatika darsligi dasturi asosida tuzilgan bo'lib, o'quvchi **Ta
 - **Tailwind CSS v4** (`@tailwindcss/vite`)
 - **Lucide Icons**
 - **Canvas-Confetti**
+- **Web Audio API** (100% oflayn simulyatsiya tovushlari)
 - **Vite**
 
 ---
@@ -60,33 +63,6 @@ npm run dev
 ```
 
 Brauzerda ochish: **http://localhost:5173/**
-
----
-
-## 📦 Loyiha Strukturasi / Структура проекта
-
-```
-src/
-├── components/
-│   ├── Canvas.tsx              # 2D Yulduzsimon topologiya maydoni va animatsion kabellar
-│   ├── Checklist.tsx           # Asosiy talablar nazorat chizig'i (status-strip)
-│   ├── ClientCallModal.tsx     # Buyurtmachi qo'ng'irog'i (Dinamik voqea)
-│   ├── DefenseModal.tsx        # 100 ballik baholash va 60 soniyalik himoya nutqi
-│   ├── Header.tsx              # HUD, Byudjet, Taymer, Chellenj va Til boshqaruvi
-│   ├── NodeInspectorModal.tsx  # Qurilma texnik tafsilotlari (IP, MAC, Gateway)
-│   ├── PingTestModal.tsx       # ICMP paketlar diagnostikasi terminali
-│   ├── Sidebar.tsx             # Uskunalar do'koni va iOS-style 5 ta xavfsizlik kaliti
-│   └── TrapAlertModal.tsx      # 8-portli switch pedagogik tuzog'i ogohlantirishi
-├── i18n/
-│   └── translations.ts         # O'zbek va Rus tillaridagi 100% to'liq lug'at
-├── types/
-│   └── index.ts                # TypeScript interfeyslari va turlari
-├── utils/
-│   └── audio.ts                # Web Audio API ovoz sintezatori
-├── App.tsx                     # Asosiy o'yin holati va muvofiqlashtiruvchi
-├── index.css                   # Minimalist uslub va animatsiyalar
-└── main.tsx                    # React ilovasining kirish nuqtasi
-```
 
 ---
 

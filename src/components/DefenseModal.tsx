@@ -23,6 +23,7 @@ interface DefenseModalProps {
   evaluation: EvaluationResult;
   language: Language;
   soundEnabled: boolean;
+  onProceedToTask2: () => void;
 }
 
 export const DefenseModal: React.FC<DefenseModalProps> = ({
@@ -31,6 +32,7 @@ export const DefenseModal: React.FC<DefenseModalProps> = ({
   evaluation,
   language,
   soundEnabled,
+  onProceedToTask2,
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
   const [rehearsalTime, setRehearsalTime] = useState<number>(60);
@@ -265,7 +267,23 @@ export const DefenseModal: React.FC<DefenseModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-white/[0.06] bg-slate-950 flex justify-end">
+        <div className="px-5 py-3 border-t border-white/[0.06] bg-slate-950 flex items-center justify-between gap-2">
+          {isPassed ? (
+            <button
+              onClick={() => {
+                soundEffects.successFanfare(soundEnabled);
+                onProceedToTask2();
+              }}
+              className="px-4 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md shadow-cyan-500/20"
+            >
+              <span>{t.nextTaskBtn}</span>
+            </button>
+          ) : (
+            <span className="text-[11px] text-amber-400 font-medium">
+              80%+ ball to'plab 2-topshiriqni oching
+            </span>
+          )}
+
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-lg bg-white/[0.06] hover:bg-white/10 text-slate-200 text-xs font-medium transition-colors"

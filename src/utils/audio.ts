@@ -69,6 +69,39 @@ export const soundEffects = {
     }, 45);
   },
 
+  crimpClamp: (enabled: boolean = true) => {
+    if (!enabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(450, ctx.currentTime);
+    osc.frequency.linearRampToValueAtTime(120, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  },
+
+  testerBeep: (enabled: boolean = true, freq: number = 880) => {
+    if (!enabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  },
+
   startRingtone: (enabled: boolean = true) => {
     if (!enabled) return;
     soundEffects.stopRingtone();

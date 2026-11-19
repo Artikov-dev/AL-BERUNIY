@@ -5,19 +5,26 @@ import type {
   SecurityMeasures, 
   HardwarePrices, 
   NetworkNodeInfo, 
-  EvaluationResult 
+  EvaluationResult,
+  TaskTab,
+  CompletedTasks
 } from './types';
 import { translations } from './i18n/translations';
 import { soundEffects } from './utils/audio';
 import { Header } from './components/Header';
+import { TaskNavigation } from './components/TaskNavigation';
 import { Checklist } from './components/Checklist';
 import { Sidebar } from './components/Sidebar';
 import { Canvas } from './components/Canvas';
+import { Task2Troubleshoot } from './components/Task2Troubleshoot';
+import { Task3Crimper } from './components/Task3Crimper';
+import { Task4Vlan } from './components/Task4Vlan';
 import { NodeInspectorModal } from './components/NodeInspectorModal';
 import { ClientCallModal } from './components/ClientCallModal';
 import { TrapAlertModal } from './components/TrapAlertModal';
 import { PingTestModal } from './components/PingTestModal';
 import { DefenseModal } from './components/DefenseModal';
+import { CertificateModal } from './components/CertificateModal';
 
 const hardwarePrices: HardwarePrices = {
   isp: 0,
@@ -33,7 +40,16 @@ export const App: React.FC = () => {
   // 1. Language state (UZ default)
   const [language, setLanguage] = useState<Language>('uz');
 
-  // 2. Hardware components state
+  // 2. Multi-Task Progression State
+  const [currentTab, setCurrentTab] = useState<TaskTab>('task1');
+  const [completedTasks, setCompletedTasks] = useState<CompletedTasks>({
+    task1: false,
+    task2: false,
+    task3: false,
+    task4: false,
+  });
+
+  // 3. Task 1 Hardware components state
   const [hasIsp, setHasIsp] = useState<boolean>(false);
   const [hasRouter, setHasRouter] = useState<boolean>(false);
   const [selectedSwitch, setSelectedSwitch] = useState<SwitchType>('none');
@@ -41,7 +57,7 @@ export const App: React.FC = () => {
   const [hasPrinter, setHasPrinter] = useState<boolean>(false);
   const [hasCables, setHasCables] = useState<boolean>(false);
 
-  // 3. Security state
+  // 4. Task 1 Security state
   const [security, setSecurity] = useState<SecurityMeasures>({
     guestIsolation: false,
     wpa3Encryption: false,
@@ -50,28 +66,29 @@ export const App: React.FC = () => {
     antivirusUpdate: false,
   });
 
-  // 4. Budget & Challenge Mode (-10%)
+  // 5. Budget & Challenge Mode (-10%)
   const [isChallengeMode, setIsChallengeMode] = useState<boolean>(false);
   const budgetLimit = isChallengeMode ? 225 : 250;
 
-  // 5. Sound toggle
+  // 6. Sound toggle
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
-  // 6. 60-Second Challenge Timer
+  // 7. 60-Second Challenge Timer (Task 1)
   const [timerSeconds, setTimerSeconds] = useState<number>(60);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
 
-  // 7. Dynamic Event: Client Call
+  // 8. Dynamic Event: Client Call
   const [clientCallPending, setClientCallPending] = useState<boolean>(false);
   const [clientCallModalOpen, setClientCallModalOpen] = useState<boolean>(false);
   const [guestWifiActive, setGuestWifiActive] = useState<boolean>(false);
   const [clientCallScheduled, setClientCallScheduled] = useState<boolean>(false);
 
-  // 8. Modals state
+  // 9. Modals state
   const [inspectedNode, setInspectedNode] = useState<NetworkNodeInfo | null>(null);
   const [trapModalOpen, setTrapModalOpen] = useState<boolean>(false);
   const [pingModalOpen, setPingModalOpen] = useState<boolean>(false);
   const [defenseModalOpen, setDefenseModalOpen] = useState<boolean>(false);
+  const [certificateModalOpen, setCertificateModalOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const t = translations[language];
@@ -106,7 +123,7 @@ export const App: React.FC = () => {
     }
   }, [selectedSwitch, totalDevicesNeedingPort, soundEnabled]);
 
-  // Timer interval
+  // Timer interval for Task 1
   useEffect(() => {
     let interval: number | null = null;
     if (isTimerRunning && timerSeconds > 0) {
@@ -126,7 +143,7 @@ export const App: React.FC = () => {
     };
   }, [isTimerRunning, timerSeconds, soundEnabled]);
 
-  // Scheduled Client Call event after 15 seconds of gameplay
+  // Scheduled Client Call event after 12 seconds of gameplay
   useEffect(() => {
     if (clientCallScheduled) return;
     const tid = window.setTimeout(() => {
@@ -144,84 +161,7 @@ export const App: React.FC = () => {
     return () => clearTimeout(tid);
   }, [clientCallScheduled, guestWifiActive, soundEnabled, language, showToast]);
 
-  // Handlers for equipment
-  const handleToggleIsp = () => setHasIsp(!hasIsp);
-  const handleToggleRouter = () => setHasRouter(!hasRouter);
-  const handleSelectSwitch = (type: SwitchType) => setSelectedSwitch(type);
-  const handleUpdatePcCount = (count: number) => setPcCount(count);
-  const handleTogglePrinter = () => setHasPrinter(!hasPrinter);
-  const handleToggleCables = () => setHasCables(!hasCables);
-
-  const handleToggleSecurity = (key: keyof SecurityMeasures) => {
-    setSecurity((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
-  const handleToggleChallengeMode = () => {
-    setIsChallengeMode(!isChallengeMode);
-  };
-
-  const handleToggleTimer = () => {
-    if (timerSeconds === 0) setTimerSeconds(60);
-    setIsTimerRunning(!isTimerRunning);
-  };
-
-  const handleResetTimer = () => {
-    setIsTimerRunning(false);
-    setTimerSeconds(60);
-  };
-
-  const handleOpenClientCall = () => {
-    soundEffects.stopRingtone();
-    setClientCallPending(false);
-    setClientCallModalOpen(true);
-  };
-
-  const handleAcceptClientCall = () => {
-    soundEffects.stopRingtone();
-    setGuestWifiActive(true);
-    setClientCallPending(false);
-    setClientCallModalOpen(false);
-    showToast(t.callAcceptedToast);
-  };
-
-  const handleFixTrap = () => {
-    setSelectedSwitch('switch16');
-    setTrapModalOpen(false);
-    showToast(
-      language === 'uz'
-        ? "16-portli gigabit switch muvaffaqiyatli o'rnatildi!"
-        : "16-портовый гигабитный свитч успешно установлен!"
-    );
-  };
-
-  const handleResetAll = () => {
-    soundEffects.click(soundEnabled);
-    if (window.confirm(language === 'uz' ? "Loyihani boshidan boshlashni xohlaysizmi?" : "Сбросить проект и начать заново?")) {
-      setHasIsp(false);
-      setHasRouter(false);
-      setSelectedSwitch('none');
-      setPcCount(0);
-      setHasPrinter(false);
-      setHasCables(false);
-      setGuestWifiActive(false);
-      setClientCallPending(false);
-      soundEffects.stopRingtone();
-      setSecurity({
-        guestIsolation: false,
-        wpa3Encryption: false,
-        adminPassword: false,
-        firewall: false,
-        antivirusUpdate: false,
-      });
-      setTimerSeconds(60);
-      setIsTimerRunning(false);
-    }
-  };
-
-  // Evaluation calculation
+  // Evaluation calculation for Task 1
   const evaluation: EvaluationResult = useMemo(() => {
     let score = 0;
     const isBudgetValid = totalCost <= budgetLimit;
@@ -237,23 +177,16 @@ export const App: React.FC = () => {
     const isTrapTriggered = selectedSwitch === 'switch8';
     const isChallengePassed = isChallengeMode && isBudgetValid && isPcCountMet && isSecurityComplete;
 
-    // Scoring weights
     if (isCablesInstalled) score += 15;
     if (hasIsp && hasRouter) score += 15;
     if (isSwitch16Used) score += 15;
     if (pcCount === 10) score += 15;
     if (hasPrinter && isSwitch16Used) score += 5;
     if (isGuestWifiOk) score += 10;
-    score += secCount * 5; // 25 max for 5 security measures
+    score += secCount * 5;
 
-    // Trap penalty
-    if (isTrapTriggered) {
-      score = Math.max(0, score - 20);
-    }
-    // Budget penalty
-    if (!isBudgetValid) {
-      score = Math.max(0, score - 25);
-    }
+    if (isTrapTriggered) score = Math.max(0, score - 20);
+    if (!isBudgetValid) score = Math.max(0, score - 25);
 
     const badges = [
       {
@@ -326,8 +259,121 @@ export const App: React.FC = () => {
     isChallengeMode,
   ]);
 
+  // Handlers for Task 1
+  const handleToggleIsp = () => setHasIsp(!hasIsp);
+  const handleToggleRouter = () => setHasRouter(!hasRouter);
+  const handleSelectSwitch = (type: SwitchType) => setSelectedSwitch(type);
+  const handleUpdatePcCount = (count: number) => setPcCount(count);
+  const handleTogglePrinter = () => setHasPrinter(!hasPrinter);
+  const handleToggleCables = () => setHasCables(!hasCables);
+
+  const handleToggleSecurity = (key: keyof SecurityMeasures) => {
+    setSecurity((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const handleToggleChallengeMode = () => setIsChallengeMode(!isChallengeMode);
+  const handleToggleTimer = () => {
+    if (timerSeconds === 0) setTimerSeconds(60);
+    setIsTimerRunning(!isTimerRunning);
+  };
+  const handleResetTimer = () => {
+    setIsTimerRunning(false);
+    setTimerSeconds(60);
+  };
+
+  const handleOpenClientCall = () => {
+    soundEffects.stopRingtone();
+    setClientCallPending(false);
+    setClientCallModalOpen(true);
+  };
+
+  const handleAcceptClientCall = () => {
+    soundEffects.stopRingtone();
+    setGuestWifiActive(true);
+    setClientCallPending(false);
+    setClientCallModalOpen(false);
+    showToast(t.callAcceptedToast);
+  };
+
+  const handleFixTrap = () => {
+    setSelectedSwitch('switch16');
+    setTrapModalOpen(false);
+    showToast(
+      language === 'uz'
+        ? "16-portli gigabit switch muvaffaqiyatli o'rnatildi!"
+        : "16-портовый гигабитный свитч успешно установлен!"
+    );
+  };
+
+  const handleResetAll = () => {
+    soundEffects.click(soundEnabled);
+    if (window.confirm(language === 'uz' ? "Loyihani boshidan boshlashni xohlaysizmi?" : "Сбросить проект и начать заново?")) {
+      setHasIsp(false);
+      setHasRouter(false);
+      setSelectedSwitch('none');
+      setPcCount(0);
+      setHasPrinter(false);
+      setHasCables(false);
+      setGuestWifiActive(false);
+      setClientCallPending(false);
+      soundEffects.stopRingtone();
+      setSecurity({
+        guestIsolation: false,
+        wpa3Encryption: false,
+        adminPassword: false,
+        firewall: false,
+        antivirusUpdate: false,
+      });
+      setTimerSeconds(60);
+      setIsTimerRunning(false);
+      setCurrentTab('task1');
+    }
+  };
+
+  // Progression Handlers
+  const handleOpenDefenseModal = () => {
+    // If score >= 80, unlock task 1
+    if (evaluation.score >= 80) {
+      setCompletedTasks((prev) => ({ ...prev, task1: true }));
+    }
+    setDefenseModalOpen(true);
+  };
+
+  const handleProceedToTask2 = () => {
+    setCompletedTasks((prev) => ({ ...prev, task1: true }));
+    setDefenseModalOpen(false);
+    setCurrentTab('task2');
+    showToast(t.task1UnlockedTask2Toast);
+  };
+
+  const handleCompleteTask2 = () => {
+    setCompletedTasks((prev) => ({ ...prev, task2: true }));
+    showToast(t.task2UnlockedTask3Toast);
+  };
+
+  const handleProceedToTask3 = () => {
+    setCurrentTab('task3');
+  };
+
+  const handleCompleteTask3 = () => {
+    setCompletedTasks((prev) => ({ ...prev, task3: true }));
+    showToast(t.task3UnlockedTask4Toast);
+  };
+
+  const handleProceedToTask4 = () => {
+    setCurrentTab('task4');
+  };
+
+  const handleCompleteTask4 = () => {
+    setCompletedTasks((prev) => ({ ...prev, task4: true }));
+    showToast(t.task4CompletedToast);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased">
+    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col font-sans select-none antialiased">
       {/* 1. Top HUD Header */}
       <Header
         language={language}
@@ -346,62 +392,108 @@ export const App: React.FC = () => {
         clientCallPending={clientCallPending}
         guestWifiActive={guestWifiActive}
         onRunPingTest={() => setPingModalOpen(true)}
-        onOpenDefense={() => setDefenseModalOpen(true)}
+        onOpenDefense={handleOpenDefenseModal}
         onResetAll={handleResetAll}
       />
 
-      {/* 2. Requirements Checklist Bar */}
-      <Checklist
+      {/* 2. Multi-Task Progression Navigation Tab Bar */}
+      <TaskNavigation
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
+        completedTasks={completedTasks}
         language={language}
-        hasIsp={hasIsp}
-        hasRouter={hasRouter}
-        selectedSwitch={selectedSwitch}
-        pcCount={pcCount}
-        hasPrinter={hasPrinter}
-        hasCables={hasCables}
-        guestWifiActive={guestWifiActive}
-        security={security}
+        soundEnabled={soundEnabled}
+        onShowLockedToast={() => showToast(t.taskLockedTip)}
+        onOpenCertificate={() => setCertificateModalOpen(true)}
       />
 
-      {/* 3. Main Workspace: Sidebar & Canvas */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-        <Sidebar
+      {/* 3. Conditional Content by Active Task */}
+      {currentTab === 'task1' && (
+        <>
+          {/* Checklist Bar */}
+          <Checklist
+            language={language}
+            hasIsp={hasIsp}
+            hasRouter={hasRouter}
+            selectedSwitch={selectedSwitch}
+            pcCount={pcCount}
+            hasPrinter={hasPrinter}
+            hasCables={hasCables}
+            guestWifiActive={guestWifiActive}
+            security={security}
+          />
+
+          {/* Task 1 Workspace: Sidebar & Canvas */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+            <Sidebar
+              language={language}
+              soundEnabled={soundEnabled}
+              prices={hardwarePrices}
+              hasIsp={hasIsp}
+              onToggleIsp={handleToggleIsp}
+              hasRouter={hasRouter}
+              onToggleRouter={handleToggleRouter}
+              selectedSwitch={selectedSwitch}
+              onSelectSwitch={handleSelectSwitch}
+              pcCount={pcCount}
+              onUpdatePcCount={handleUpdatePcCount}
+              hasPrinter={hasPrinter}
+              onTogglePrinter={handleTogglePrinter}
+              hasCables={hasCables}
+              onToggleCables={handleToggleCables}
+              security={security}
+              onToggleSecurity={handleToggleSecurity}
+            />
+
+            <Canvas
+              language={language}
+              soundEnabled={soundEnabled}
+              hasIsp={hasIsp}
+              hasRouter={hasRouter}
+              selectedSwitch={selectedSwitch}
+              pcCount={pcCount}
+              hasPrinter={hasPrinter}
+              hasCables={hasCables}
+              guestWifiActive={guestWifiActive}
+              onOpenInspector={(node) => setInspectedNode(node)}
+            />
+          </div>
+        </>
+      )}
+
+      {currentTab === 'task2' && (
+        <Task2Troubleshoot
           language={language}
           soundEnabled={soundEnabled}
-          prices={hardwarePrices}
-          hasIsp={hasIsp}
-          onToggleIsp={handleToggleIsp}
-          hasRouter={hasRouter}
-          onToggleRouter={handleToggleRouter}
-          selectedSwitch={selectedSwitch}
-          onSelectSwitch={handleSelectSwitch}
-          pcCount={pcCount}
-          onUpdatePcCount={handleUpdatePcCount}
-          hasPrinter={hasPrinter}
-          onTogglePrinter={handleTogglePrinter}
-          hasCables={hasCables}
-          onToggleCables={handleToggleCables}
-          security={security}
-          onToggleSecurity={handleToggleSecurity}
+          onCompleteTask2={handleCompleteTask2}
+          onProceedToTask3={handleProceedToTask3}
+          isTaskCompleted={completedTasks.task2}
         />
+      )}
 
-        <Canvas
+      {currentTab === 'task3' && (
+        <Task3Crimper
           language={language}
           soundEnabled={soundEnabled}
-          hasIsp={hasIsp}
-          hasRouter={hasRouter}
-          selectedSwitch={selectedSwitch}
-          pcCount={pcCount}
-          hasPrinter={hasPrinter}
-          hasCables={hasCables}
-          guestWifiActive={guestWifiActive}
-          onOpenInspector={(node) => setInspectedNode(node)}
+          onCompleteTask3={handleCompleteTask3}
+          onProceedToTask4={handleProceedToTask4}
+          isTaskCompleted={completedTasks.task3}
         />
-      </div>
+      )}
 
-      {/* Toast Alert Notification */}
+      {currentTab === 'task4' && (
+        <Task4Vlan
+          language={language}
+          soundEnabled={soundEnabled}
+          onCompleteTask4={handleCompleteTask4}
+          onOpenCertificate={() => setCertificateModalOpen(true)}
+          isTaskCompleted={completedTasks.task4}
+        />
+      )}
+
+      {/* Minimal Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-4 right-4 z-50 bg-slate-900/90 border border-white/10 text-slate-200 px-3.5 py-2 rounded-xl shadow-lg backdrop-blur-md text-xs font-medium flex items-center gap-2 animate-in slide-in-from-bottom-3">
+        <div className="fixed bottom-4 right-4 z-50 bg-slate-900/95 border border-white/10 text-slate-200 px-3.5 py-2 rounded-xl shadow-xl backdrop-blur-md text-xs font-medium flex items-center gap-2 animate-in slide-in-from-bottom-3">
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
           <span>{toastMessage}</span>
         </div>
@@ -450,6 +542,14 @@ export const App: React.FC = () => {
         isOpen={defenseModalOpen}
         onClose={() => setDefenseModalOpen(false)}
         evaluation={evaluation}
+        language={language}
+        soundEnabled={soundEnabled}
+        onProceedToTask2={handleProceedToTask2}
+      />
+
+      <CertificateModal
+        isOpen={certificateModalOpen}
+        onClose={() => setCertificateModalOpen(false)}
         language={language}
         soundEnabled={soundEnabled}
       />

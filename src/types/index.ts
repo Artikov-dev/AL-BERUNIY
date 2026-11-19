@@ -1,5 +1,14 @@
 export type Language = 'uz' | 'ru';
 
+export type TaskTab = 'task1' | 'task2' | 'task3' | 'task4';
+
+export interface CompletedTasks {
+  task1: boolean; // 1-Topshiriq: Ofis tarmog'ini loyihalash ($250 / $225)
+  task2: boolean; // 2-Topshiriq: Avariya va diagnostika (10 daqiqa, 3 ta nosozlik)
+  task3: boolean; // 3-Topshiriq: RJ-45 kabel siqish (T568B standarti)
+  task4: boolean; // 4-Topshiriq: Bo'limlar VLAN va IP segmentatsiya
+}
+
 export type SwitchType = 'none' | 'switch16' | 'switch8';
 
 export interface SecurityMeasures {
@@ -58,4 +67,43 @@ export interface EvaluationResult {
   }>;
   totalCost: number;
   budgetLimit: number;
+}
+
+// TASK 2: TROUBLESHOOTING TYPES
+export interface IncidentState {
+  ipConflictFixed: boolean;     // PC-07 IP corrected from 192.168.1.13 to 192.168.1.17
+  wrongGatewayFixed: boolean;   // PC-05 Gateway corrected from 192.168.0.1 to 192.168.1.1
+  virusQuarantined: boolean;    // PC-09 Malware scanned and quarantined
+}
+
+// TASK 3: RJ-45 CRIMPING TYPES
+export type WireColorId = 
+  | 'white-orange' 
+  | 'orange' 
+  | 'white-green' 
+  | 'blue' 
+  | 'white-blue' 
+  | 'green' 
+  | 'white-brown' 
+  | 'brown';
+
+export interface WireColorInfo {
+  id: WireColorId;
+  nameUz: string;
+  nameRu: string;
+  hex: string;
+  stripe?: boolean;
+}
+
+// TASK 4: DEPARTMENT & VLAN TYPES
+export type DepartmentId = 'accounting' | 'sales';
+
+export interface DepartmentSetting {
+  id: DepartmentId;
+  nameUz: string;
+  nameRu: string;
+  vlanId: number;
+  ipRange: string;
+  gateway: string;
+  printerAccess: boolean;
 }

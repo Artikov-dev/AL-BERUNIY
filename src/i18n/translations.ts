@@ -1,6 +1,19 @@
 export const translations = {
   uz: {
-    // Header & Meta
+    // Navigation & Tasks
+    tasksTitle: "O'quv Topshiriqlari",
+    task1Tab: "1. Loyihalash",
+    task2Tab: "2. Diagnostika (10m)",
+    task3Tab: "3. RJ-45 Siqish",
+    task4Tab: "4. VLAN & IP",
+    taskLockedTip: "Avvalgi topshiriqni yakunlang!",
+    task1UnlockedTask2Toast: "Tabriklaymiz! 1-topshiriq himoya qilindi. 2-topshiriq (Diagnostika) ochildi!",
+    task2UnlockedTask3Toast: "Ajoyib! Avariya bartaraf etildi. 3-topshiriq (RJ-45 Kabel) ochildi!",
+    task3UnlockedTask4Toast: "Zo'r! Kabel muvaffaqiyatli siqildi. 4-topshiriq (VLAN) ochildi!",
+    task4CompletedToast: "Tabriklaymiz! Barcha 4 ta topshiriq a'lo darajada yakunlandi! Sertifikat tayyor!",
+    nextTaskBtn: "Keyingi topshiriqqa o'tish ➔",
+
+    // Header & Meta (Task 1)
     appTitle: "Tarmoq Loyihasi: 10 Kishilik Ofis",
     appSubtitle: "8-sinf Informatika darsi amaliy simulyatori",
     roleBadge: "Tarmoq Muhandisi",
@@ -150,7 +163,7 @@ export const translations = {
     timerRunningLabel: "Nutq vaqti ketmoqda...",
     timerFinishedLabel: "Vaqt tugadi! Ajoyib chiqish!",
 
-    // 60-Second Speech Segments (Curriculum aligned)
+    // 60-Second Speech Segments
     speechTitle: "60 Soniyalik Loyiha Taqdimoti Nutqi (Darsda o'qish uchun)",
     speechText: `Assalomu alaykum, hurmatli ustoz va sinfdoshlar!
 
@@ -190,13 +203,96 @@ E'tiboringiz uchun rahmat, savollaringizga javob berishga tayyorman!`,
     maskLabel: "Tarmoq Niqobi (Subnet Mask)",
     curriculumNote: "8-sinf Darsligidan ma'lumot",
 
-    // Educational tooltips
-    whySwitch16: "Nima uchun 16 portli? 1 uplink + 10 PC + 1 printer = 12 port kerak. 8-portli yetmaydi, 24-portli esa qimmat!",
-    whyIsolation: "Mehmonlar Wi-Fi orqali ofis printeridan bexosdan qog'oz chiqarishi yoki kompyuterlardagi shaxsiy fayllarni ko'rib qolishining oldini oladi."
+    // TASK 2: TROUBLESHOOTING TRANSLATIONS
+    task2Title: "2-Topshiriq: Tarmoq Avariyasi va Diagnostika",
+    task2Subtitle: "Ofis tarmog'i ishdan chiqdi! 10 daqiqa ichida 3 ta nosozlikni toping va tuzating.",
+    task2TimerLabel: "Avariya Taymeri (10 daqiqa):",
+    task2IncidentsResolved: "Nosozliklar bartaraf etildi",
+    
+    // Incident 1
+    inc1Title: "1. IP-Manzillar To'qnashuvi (IP Conflict)",
+    inc1Desc: "PC-03 va PC-07 bir xil IP manzilga (192.168.1.13) ega bo'lib qolgan. Natijada ikkala kompyuter ham tarmoqdan uzilgan!",
+    inc1Action: "PC-07 IP manzilini to'g'rilash (192.168.1.17 ga almashtirish)",
+    inc1Fixed: "IP to'qnashuvi bartaraf etildi (PC-07: 192.168.1.17)",
+
+    // Incident 2
+    inc2Title: "2. Noto'g'ri Standart Shlyuz (Wrong Gateway)",
+    inc2Desc: "PC-05 internetga chiqa olmayapti. Tekshiruvda uning Default Gateway manzili 192.168.0.1 deb xato yozilganligi aniqlandi!",
+    inc2Action: "Shlyuzni router IP manzili (192.168.1.1) ga to'g'rilash",
+    inc2Fixed: "Shlyuz to'g'rilandi (Gateway: 192.168.1.1)",
+
+    // Incident 3
+    inc3Title: "3. Kiberhujum / Virusli Kompyuter (DDoS Bot)",
+    inc3Desc: "PC-09 xodimi noma'lum fleshka ulab virus yuqtirgan! Kompyuterdan tarmoqqa millionlab soxta so'rovlar oqib kelib, switchni qizdirmoqda.",
+    inc3Action: "PC-09 ni tarmoqdan ajratish va Antivirus tozalashni ishga tushirish",
+    inc3Fixed: "Zararli dastur yo'q qilindi va PC-09 xavfsiz holatga keltirildi!",
+
+    task2SuccessTitle: "Avariya to'liq bartaraf etildi!",
+    task2SuccessDesc: "Ofis tarmog'i yana barqaror ishlayapti. 3-topshiriq (RJ-45 Kabel siqish) ochildi!",
+
+    // TASK 3: RJ-45 CRIMPING TRANSLATIONS
+    task3Title: "3-Topshiriq: RJ-45 UTP Kabelni Siqish Laboratoriyasi",
+    task3Subtitle: "T568B standarti bo'yicha 8 ta rangli simni to'g'ri tartibda joylashtiring va testerda sinang.",
+    task3StandardTitle: "EIA/TIA-568B Xalqaro Ranglar Standarti:",
+    task3AvailableWires: "Mavjud rangli simlar (Bosib uyaga joylashtiring):",
+    task3SlotLabel: "Konnektor Uyasi",
+    task3ClearAll: "Simlarni tozalash",
+    task3AutoFill: "Standart bo'yicha to'ldirish (Yordam)",
+    task3RunTester: "Kabel Testerni Ishga Tushirish",
+    task3TestingInProgress: "Tester signallarni tekshirmoqda (1 ➔ 8)...",
+    task3TesterPassed: "TEST MUVAFFAQiYATLI! Barcha 8 ta sim to'g'ri ulandi (1000 Mbps Gigabit tayyor).",
+    task3TesterFailed: "XATOLIK! Simlar ketma-ketligi buzilgan. Standartga qarab qayta terib chiqing.",
+
+    // Wire colors
+    wireWhiteOrange: "Oq-to'q sariq (White-Orange)",
+    wireOrange: "To'q sariq (Orange)",
+    wireWhiteGreen: "Oq-yashil (White-Green)",
+    wireBlue: "Moviy (Blue)",
+    wireWhiteBlue: "Oq-moviy (White-Blue)",
+    wireGreen: "Yashil (Green)",
+    wireWhiteBrown: "Oq-jigarrang (White-Brown)",
+    wireBrown: "Jigarrang (Brown)",
+
+    // TASK 4: VLAN & SUBNETTING TRANSLATIONS
+    task4Title: "4-Topshiriq: Bo'limlararo VLAN & IP Segmentatsiya",
+    task4Subtitle: "Kompaniya xavfsizligi uchun 10 ta kompyuterni 2 ta alohida bo'limga ajrating va kirish huquqlarini belgilang.",
+    deptAccounting: "Buxgalteriya va Kadrlar (VLAN 10)",
+    deptAccountingDesc: "Maxfiy moliyaviy ma'lumotlar. Statik IP (192.168.10.x). Umumiy printerga to'liq ruxsat.",
+    deptSales: "Sotuv va Mijozlar (VLAN 20)",
+    deptSalesDesc: "Tashqi sotuv bo'limi. Dinamik DHCP (192.168.20.x). Printerga ruxsat yo'q (faqat internet).",
+    task4AssignDept: "Bo'limni biriktirish:",
+    task4VerifyMatrix: "VLAN Xavfsizlik Matritsasini Tekshirish",
+    task4SuccessTitle: "VLAN Segmentatsiyasi Benuqson Amalga Oshirildi!",
+    task4SuccessDesc: "Buxgalteriya fayllari sotuv bo'limidan to'liq himoyalandi va printer huquqlari to'g'ri taqsimlandi.",
+    viewCertificateBtn: "Diplom va Sertifikatni Ko'rish 🎓",
+
+    // CERTIFICATE MODAL
+    certTitle: "SENIOR TARMOQ MUHANDISI SERTIFIKATI",
+    certSubtitle: "Al-Beruniy Nomidagi Amaliy Informatika Ta'lim Dasturi",
+    certAwardedTo: "Taqdirlanadi:",
+    certStudentRole: "8-Sinf O'quvchisi / Yosh Tarmoq Muhandisi",
+    certBody: "Ushbu sertifikat egasi 10 kishilik ofis mahalliy hisoblash tarmog'ini (LAN) muvaffaqiyatli loyihaladi, yuz bergan avariya holatini 10 daqiqada bartaraf etdi, T568B RJ-45 kabelini siqishni bajardi hamda VLAN bo'limlar xavfsizligini 100% a'lo bahoga himoya qildi.",
+    certSignTeacher: "Informatika fani ustozi",
+    certSignAdmin: "Maktab Ma'muriyati",
+    certDateLabel: "Sana:",
+    printCertBtn: "Sertifikatni Chop Etish (PDF)"
   },
 
   ru: {
-    // Header & Meta
+    // Navigation & Tasks
+    tasksTitle: "Учебные Задания",
+    task1Tab: "1. Проектирование",
+    task2Tab: "2. Диагностика (10м)",
+    task3Tab: "3. Обжим RJ-45",
+    task4Tab: "4. VLAN & IP",
+    taskLockedTip: "Завершите предыдущее задание!",
+    task1UnlockedTask2Toast: "Поздравляем! Задание 1 защищено. Задание 2 (Диагностика) разблокировано!",
+    task2UnlockedTask3Toast: "Отлично! Авария устранена. Задание 3 (Кабель RJ-45) разблокировано!",
+    task3UnlockedTask4Toast: "Супер! Кабель успешно обжат. Задание 4 (VLAN) разблокировано!",
+    task4CompletedToast: "Поздравляем! Все 4 задания выполнены на отлично! Сертификат готов!",
+    nextTaskBtn: "Перейти к следующему заданию ➔",
+
+    // Header & Meta (Task 1)
     appTitle: "Сетевой проект: Офис на 10 человек",
     appSubtitle: "Интерактивный симулятор для 8 класса по информатике",
     roleBadge: "Сетевой Инженер",
@@ -334,7 +430,7 @@ E'tiboringiz uchun rahmat, savollaringizga javob berishga tayyorman!`,
     pingFailText: "Обрыв связи! Проверьте наличие кабелей UTP или подключение роутера и коммутатора.",
     closeBtn: "Закрыть",
 
-    // Presentation Defense Modal (Защита Проекта)
+    // Presentation Defense Modal
     defenseTitle: "Защита Сетевого Проекта (Презентация)",
     defenseSubtitle: "Готовая 60-секундная речь для выступления на уроке информатики в 8 классе",
     defenseScoreLabel: "Итоговая Оценка",
@@ -346,7 +442,7 @@ E'tiboringiz uchun rahmat, savollaringizga javob berishga tayyorman!`,
     timerRunningLabel: "Идёт отсчёт речи...",
     timerFinishedLabel: "Время вышло! Отличное выступление!",
 
-    // 60-Second Speech Segments (Curriculum aligned)
+    // 60-Second Speech Segments
     speechTitle: "Текст 60-Секундной Речи для Защиты Проекта перед Классом",
     speechText: `Здравствуйте, уважаемый учитель и одноклассники!
 
@@ -386,8 +482,78 @@ E'tiboringiz uchun rahmat, savollaringizga javob berishga tayyorman!`,
     maskLabel: "Маска Подсети (Subnet Mask)",
     curriculumNote: "Справка из учебника информатики 8 класса",
 
-    // Educational tooltips
-    whySwitch16: "Почему 16 портов? 1 апплинк к роутеру + 10 ПК + 1 принтер = 12 портов. 8-портового не хватит, а 24-портовый неоправданно дорогой!",
-    whyIsolation: "Изоляция предотвращает случайную печать документов гостями офиса и перехват конфиденциальных файлов сотрудников."
+    // TASK 2: TROUBLESHOOTING TRANSLATIONS (RU)
+    task2Title: "Задание 2: Диагностика и Устранение Аварии",
+    task2Subtitle: "Сеть офиса вышла из строя! За 10 минут найдите и устраните 3 критические неисправности.",
+    task2TimerLabel: "Таймер Аварии (10 минут):",
+    task2IncidentsResolved: "Неисправности устранены",
+
+    // Incident 1
+    inc1Title: "1. Конфликт IP-адресов (IP Conflict)",
+    inc1Desc: "ПК-03 и ПК-07 получили одинаковый статический IP-адрес (192.168.1.13). В результате оба компьютера потеряли доступ к сети!",
+    inc1Action: "Изменить IP-адрес ПК-07 (установить свободный 192.168.1.17)",
+    inc1Fixed: "Конфликт IP устранен (ПК-07: 192.168.1.17)",
+
+    // Incident 2
+    inc2Title: "2. Неверный Основной Шлюз (Wrong Gateway)",
+    inc2Desc: "ПК-05 не имеет доступа к интернету. Диагностика показала, что Default Gateway ошибочно указан как 192.168.0.1 вместо роутера!",
+    inc2Action: "Указать корректный шлюз роутера (192.168.1.1)",
+    inc2Fixed: "Основной шлюз исправлен (Gateway: 192.168.1.1)",
+
+    // Incident 3
+    inc3Title: "3. Вирусная Атака / Зараженный ПК (DDoS Bot)",
+    inc3Desc: "Сотрудник за ПК-09 подключил зараженную флешку! ПК отправляет миллионы паразитных пакетов, перегружая коммутатор.",
+    inc3Action: "Изолировать ПК-09 и запустить антивирусное сканирование",
+    inc3Fixed: "Вредоносное ПО обезврежено, ПК-09 возвращен в безопасный режим!",
+
+    task2SuccessTitle: "Авария полностью ликвидирована!",
+    task2SuccessDesc: "Сеть снова работает штатно. Задание 3 (Обжим кабеля RJ-45) разблокировано!",
+
+    // TASK 3: RJ-45 CRIMPING TRANSLATIONS (RU)
+    task3Title: "Задание 3: Лаборатория Обжима Кабеля RJ-45",
+    task3Subtitle: "Разложите 8 цветных жил по стандарту T568B и протестируйте кабельным тестером.",
+    task3StandardTitle: "Международный стандарт EIA/TIA-568B:",
+    task3AvailableWires: "Цветные проводники (нажмите для укладки в гнездо):",
+    task3SlotLabel: "Пин коннектора",
+    task3ClearAll: "Очистить проводники",
+    task3AutoFill: "Заполнить по стандарту (Подсказка)",
+    task3RunTester: "Запустить Кабельный Тестер",
+    task3TestingInProgress: "Тестер проверяет контакты (1 ➔ 8)...",
+    task3TesterPassed: "ТЕСТ УСПЕШЕН! Все 8 жил соединены правильно (1000 Мбит/с Gigabit).",
+    task3TesterFailed: "ОШИБКА! Порядок проводников нарушен. Сверьте со стандартом T568B.",
+
+    // Wire colors
+    wireWhiteOrange: "Бело-оранжевый (White-Orange)",
+    wireOrange: "Оранжевый (Orange)",
+    wireWhiteGreen: "Бело-зелёный (White-Green)",
+    wireBlue: "Синий (Blue)",
+    wireWhiteBlue: "Бело-синий (White-Blue)",
+    wireGreen: "Зелёный (Green)",
+    wireWhiteBrown: "Бело-коричневый (White-Brown)",
+    wireBrown: "Коричневый (Brown)",
+
+    // TASK 4: VLAN & SUBNETTING TRANSLATIONS (RU)
+    task4Title: "Задание 4: Межсегментный VLAN и Сегментация IP",
+    task4Subtitle: "Для защиты корпоративных данных разделите 10 рабочих ПК на 2 отдела и настройте права доступа.",
+    deptAccounting: "Бухгалтерия и Кадры (VLAN 10)",
+    deptAccountingDesc: "Конфиденциальные финансы. Статический IP (192.168.10.x). Полный доступ к сетевому принтеру.",
+    deptSales: "Продажи и Клиенты (VLAN 20)",
+    deptSalesDesc: "Отдел продаж. Динамический DHCP (192.168.20.x). Доступ к принтеру закрыт (только интернет).",
+    task4AssignDept: "Назначить отдел:",
+    task4VerifyMatrix: "Проверить Матрицу Безопасности VLAN",
+    task4SuccessTitle: "VLAN-сегментация успешно завершена!",
+    task4SuccessDesc: "Бухгалтерские данные изолированы от отдела продаж, сетевые права разграничены верно.",
+    viewCertificateBtn: "Получить Диплом и Сертификат 🎓",
+
+    // CERTIFICATE MODAL (RU)
+    certTitle: "СЕРТИФИКАТ СТАРШЕГО СЕТЕВОГО ИНЖЕНЕРА",
+    certSubtitle: "Образовательная программа по практической информатике им. Аль-Беруни",
+    certAwardedTo: "Награждается:",
+    certStudentRole: "Ученик 8 класса / Юный сетевой инженер",
+    certBody: "Обладатель данного сертификата успешно спроектировал локальную сеть (LAN) на 10 сотрудников, за 10 минут ликвидировал сложную аварию в сети, выполнил стандартный обжим витой пары T568B и безупречно настроил безопасность отделов через VLAN.",
+    certSignTeacher: "Учитель информатики",
+    certSignAdmin: "Администрация школы",
+    certDateLabel: "Дата:",
+    printCertBtn: "Печать сертификата (PDF)"
   }
 };
